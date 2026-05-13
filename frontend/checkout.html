@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Checkout — GarageBasics</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/components.css" />
+  <style>
+    .checkout-layout { display: grid; grid-template-columns: 1fr 380px; gap: 32px; padding: 40px 0 80px; align-items: start; }
+    .checkout-section { background: var(--white); border-radius: var(--radius-lg); padding: 28px; box-shadow: var(--shadow-sm); margin-bottom: 20px; }
+    .checkout-section-title { font-size: 1rem; font-weight: 800; color: var(--grey-900); margin-bottom: 20px; padding-bottom: 12px; border-bottom: 2px solid var(--grey-100); display:flex; align-items:center; gap:10px; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .order-summary { background: var(--white); border-radius: var(--radius-lg); padding: 28px; box-shadow: var(--shadow-sm); position: sticky; top: 100px; }
+    .order-item { display: flex; gap: 12px; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--grey-100); }
+    .order-item:last-of-type { border-bottom: none; }
+    .order-item img { width: 56px; height: 56px; border-radius: var(--radius-sm); object-fit: cover; border: 1px solid var(--grey-200); }
+    .order-item-info { flex: 1; }
+    .order-item-name { font-weight: 600; font-size: 0.85rem; }
+    .order-item-qty  { font-size: 0.75rem; color: var(--grey-500); }
+    .order-item-price { font-weight: 700; color: var(--orange); font-size: 0.9rem; }
+    .summary-row { display: flex; justify-content: space-between; padding: 8px 0; font-size: 0.9rem; color: var(--grey-600); }
+    .summary-total { display: flex; justify-content: space-between; padding: 14px 0 0; font-size: 1.2rem; font-weight: 900; border-top: 2px solid var(--grey-200); margin-top: 6px; }
+    .payment-card-row { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 12px; }
+    .card-logos { display: flex; gap: 8px; margin-top: 8px; }
+    .card-logo { padding: 4px 10px; border: 1px solid var(--grey-200); border-radius: var(--radius-sm); font-size: 0.75rem; font-weight: 700; color: var(--grey-600); background: var(--grey-50); }
+    /* Success Modal */
+    .success-icon { width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg, var(--success), #059669); display: flex; align-items: center; justify-content: center; font-size: 2.5rem; margin: 0 auto 20px; }
+    @media (max-width: 900px) { .checkout-layout { grid-template-columns: 1fr; } .form-row { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+
+<div class="promo-bar">🔒 Secure Checkout · <a href="cart.html">← Back to Cart</a></div>
+
+<header class="site-header">
+  <div class="header-main"><div class="container"><div class="header-inner">
+    <a href="index.html" class="site-logo"><div class="logo-icon">GB</div><div><div class="logo-text">Garage<span>Basics</span></div><div class="logo-tagline">Premium Garage Solutions</div></div></a>
+    <div class="header-actions">
+      <a href="login.html" class="header-btn" id="header-login-btn"><span class="icon">👤</span></a>
+      <a href="#" class="header-btn hidden" id="header-user-btn"><span class="icon">👤</span><span id="header-user-name" class="user-name"></span></a>
+      <a href="admin.html" class="header-btn hidden" id="header-admin-link"><span class="icon">⚙️</span></a>
+      <a href="#" class="header-btn hidden" id="header-logout-btn"><span class="icon">🚪</span></a>
+      <a href="cart.html" class="header-btn" style="position:relative;"><span class="icon">🛒</span><span class="cart-badge" style="display:none">0</span></a>
+    </div>
+  </div></div></div>
+</header>
+
+<div style="background:var(--grey-100); padding: 14px 0; border-bottom: 1px solid var(--grey-200);">
+  <div class="container">
+    <div class="breadcrumb"><a href="index.html">Home</a><span class="breadcrumb-sep">›</span><a href="cart.html">Cart</a><span class="breadcrumb-sep">›</span><span>Checkout</span></div>
+  </div>
+</div>
+
+<div class="container">
+  <div style="padding: 32px 0 16px;">
+    <h1 style="font-size:1.8rem; font-weight:900;">Secure Checkout 🔒</h1>
+  </div>
+
+  <div id="checkout-auth-warn" class="hidden">
+    <div class="alert alert-warning">Please <a href="login.html?redirect=checkout.html" style="color:var(--orange); font-weight:700;">sign in</a> to complete your purchase.</div>
+  </div>
+
+  <div class="checkout-layout" id="checkout-layout">
+    <!-- Left: Forms -->
+    <div>
+      <!-- Shipping -->
+      <div class="checkout-section">
+        <div class="checkout-section-title"><span>📦</span> Shipping Information</div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="sh-name">Full Name *</label>
+            <input class="form-control" type="text" id="sh-name" placeholder="John Doe" required />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="sh-phone">Phone Number *</label>
+            <input class="form-control" type="tel" id="sh-phone" placeholder="+1 (555) 000-0000" required />
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="sh-address">Street Address *</label>
+          <input class="form-control" type="text" id="sh-address" placeholder="123 Main Street, Apt 4B" required />
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="sh-city">City *</label>
+            <input class="form-control" type="text" id="sh-city" placeholder="Los Angeles" required />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="sh-state">State</label>
+            <input class="form-control" type="text" id="sh-state" placeholder="CA" />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="sh-zip">ZIP Code *</label>
+            <input class="form-control" type="text" id="sh-zip" placeholder="90210" required />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="sh-country">Country</label>
+            <select class="form-control" id="sh-country">
+              <option>United States</option>
+              <option>Canada</option>
+              <option>United Kingdom</option>
+              <option>Australia</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Payment -->
+      <div class="checkout-section">
+        <div class="checkout-section-title"><span>💳</span> Payment Details</div>
+        <div class="card-logos">
+          <div class="card-logo">VISA</div>
+          <div class="card-logo">MC</div>
+          <div class="card-logo">AMEX</div>
+          <div class="card-logo">PayPal</div>
+        </div>
+        <div class="form-group mt-4">
+          <label class="form-label" for="cc-name">Name on Card *</label>
+          <input class="form-control" type="text" id="cc-name" placeholder="John Doe" required />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="cc-number">Card Number *</label>
+          <input class="form-control" type="text" id="cc-number" placeholder="•••• •••• •••• ••••" maxlength="19" required />
+        </div>
+        <div class="payment-card-row">
+          <div class="form-group">
+            <label class="form-label" for="cc-expiry">Expiry Date *</label>
+            <input class="form-control" type="text" id="cc-expiry" placeholder="MM/YY" maxlength="5" required />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="cc-cvv">CVV *</label>
+            <input class="form-control" type="text" id="cc-cvv" placeholder="•••" maxlength="4" required />
+          </div>
+          <div></div>
+        </div>
+        <div class="alert alert-info mt-2">
+          🔒 This is a demo. No real payment is processed.
+        </div>
+      </div>
+
+      <button class="btn btn-primary btn-full btn-lg" id="place-order-btn" onclick="placeOrder()">
+        Place Order →
+      </button>
+    </div>
+
+    <!-- Right: Order Summary -->
+    <div class="order-summary">
+      <h3 style="font-size:1rem; font-weight:800; margin-bottom:16px;">Your Order</h3>
+      <div id="checkout-items"></div>
+      <div style="margin-top:16px; border-top: 1px solid var(--grey-100); padding-top:12px;">
+        <div class="summary-row"><span>Subtotal</span><span id="co-subtotal">$0.00</span></div>
+        <div class="summary-row"><span>Shipping</span><span id="co-shipping">—</span></div>
+        <div class="summary-row"><span>Tax (8%)</span><span id="co-tax">$0.00</span></div>
+        <div class="summary-total"><span>Total</span><span id="co-total">$0.00</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Success Modal -->
+<div class="modal-overlay" id="success-modal">
+  <div class="modal" style="text-align:center;">
+    <div class="modal-body" style="padding:40px;">
+      <div class="success-icon">✅</div>
+      <h2 style="font-size:1.6rem; font-weight:900; margin-bottom:12px;">Order Placed!</h2>
+      <p style="color:var(--grey-600); margin-bottom:8px;">Thank you for your purchase. Your order has been confirmed.</p>
+      <div id="success-order-id" style="font-weight:700; color:var(--teal); margin-bottom:24px;"></div>
+      <div style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap;">
+        <a href="orders.html" class="btn btn-primary">View My Orders</a>
+        <a href="products.html" class="btn btn-ghost">Continue Shopping</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer class="site-footer">
+  <div class="container"><div class="footer-bottom">
+    <span class="footer-copy">© 2024 GarageBasics. All rights reserved.</span>
+    <span class="footer-copy">💳 Visa · Mastercard · PayPal · AmEx</span>
+  </div></div>
+</footer>
+
+<div id="toast-container"></div>
+<script src="js/api.js"></script>
+<script src="js/main.js"></script>
+<script src="js/checkout.js"></script>
+</body>
+</html>

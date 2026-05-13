@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Shopping Cart — GarageBasics</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/components.css" />
+  <style>
+    .cart-layout { display: grid; grid-template-columns: 1fr 360px; gap: 32px; padding: 40px 0 80px; align-items: start; }
+    .cart-item { display: grid; grid-template-columns: 90px 1fr auto; gap: 16px; align-items: center; padding: 20px; background: var(--white); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); margin-bottom: 16px; }
+    .cart-item-img { width: 90px; height: 90px; border-radius: var(--radius); overflow: hidden; background: var(--grey-100); }
+    .cart-item-img img { width: 100%; height: 100%; object-fit: cover; }
+    .cart-item-name { font-weight: 700; color: var(--grey-900); margin-bottom: 4px; }
+    .cart-item-brand { font-size: 0.75rem; color: var(--teal); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }
+    .cart-item-price { font-weight: 700; color: var(--orange); }
+    .cart-item-subtotal { text-align: right; }
+    .cart-item-subtotal .subtotal-label { font-size: 0.75rem; color: var(--grey-500); margin-bottom: 4px; }
+    .cart-item-subtotal .subtotal-value { font-size: 1.1rem; font-weight: 800; color: var(--grey-900); }
+    .qty-ctrl { display: flex; align-items: center; gap: 0; border: 2px solid var(--grey-200); border-radius: var(--radius-sm); overflow: hidden; width: fit-content; margin-top: 8px; }
+    .qty-ctrl button { width: 32px; height: 32px; background: var(--grey-50); border: none; font-size: 1rem; cursor: pointer; font-weight: 700; transition: background var(--transition); }
+    .qty-ctrl button:hover { background: var(--grey-200); }
+    .qty-ctrl input { width: 48px; height: 32px; border: none; text-align: center; font-weight: 700; font-size: 0.9rem; outline: none; }
+    .order-summary { background: var(--white); border-radius: var(--radius-lg); padding: 28px; box-shadow: var(--shadow-sm); position: sticky; top: 100px; }
+    .summary-row { display: flex; justify-content: space-between; padding: 10px 0; font-size: 0.9rem; border-bottom: 1px solid var(--grey-100); }
+    .summary-row:last-of-type { border-bottom: none; }
+    .summary-total { display: flex; justify-content: space-between; padding: 16px 0 0; font-size: 1.2rem; font-weight: 900; border-top: 2px solid var(--grey-200); margin-top: 4px; }
+    .empty-cart { text-align: center; padding: 80px 20px; grid-column: 1/-1; }
+    @media (max-width: 900px) { .cart-layout { grid-template-columns: 1fr; } .cart-item { grid-template-columns: 72px 1fr; } .cart-item-subtotal { grid-column: 2; } }
+  </style>
+</head>
+<body>
+
+<div class="promo-bar">🚚 Free shipping on orders over $500 · <a href="products.html">Shop All →</a></div>
+
+<header class="site-header">
+  <div class="header-main"><div class="container"><div class="header-inner">
+    <a href="index.html" class="site-logo"><div class="logo-icon">GB</div><div><div class="logo-text">Garage<span>Basics</span></div><div class="logo-tagline">Premium Garage Solutions</div></div></a>
+    <div class="header-search"><form id="search-form"><span class="search-icon">🔍</span><input id="search-input" type="text" placeholder="Search products…" /><button type="submit" class="search-btn">Search</button></form></div>
+    <div class="header-actions">
+      <a href="login.html" class="header-btn" id="header-login-btn"><span class="icon">👤</span></a>
+      <a href="#" class="header-btn hidden" id="header-user-btn"><span class="icon">👤</span><span id="header-user-name" class="user-name"></span></a>
+      <a href="admin.html" class="header-btn hidden" id="header-admin-link"><span class="icon">⚙️</span></a>
+      <a href="#" class="header-btn hidden" id="header-logout-btn"><span class="icon">🚪</span></a>
+      <a href="cart.html" class="header-btn" style="position:relative;"><span class="icon">🛒</span><span class="cart-badge" style="display:none">0</span></a>
+    </div>
+  </div></div></div>
+  <nav class="category-nav"><div class="container"><div class="cat-nav-inner" id="cat-nav"></div></div></nav>
+</header>
+
+<div style="background:var(--grey-100); padding: 14px 0; border-bottom: 1px solid var(--grey-200);">
+  <div class="container">
+    <div class="breadcrumb"><a href="index.html">Home</a><span class="breadcrumb-sep">›</span><span>Shopping Cart</span></div>
+  </div>
+</div>
+
+<div class="container">
+  <div style="padding: 32px 0 16px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+    <h1 style="font-size:1.8rem; font-weight:900;">Shopping Cart</h1>
+    <button class="btn btn-ghost btn-sm" id="clear-cart-btn" onclick="clearCart()">🗑️ Clear Cart</button>
+  </div>
+
+  <div id="cart-loading" style="text-align:center; padding:60px 0;"><div class="spinner"></div></div>
+
+  <div class="cart-layout hidden" id="cart-layout">
+    <!-- Cart Items -->
+    <div>
+      <div id="cart-items-list"></div>
+      <a href="products.html" class="btn btn-ghost mt-4">← Continue Shopping</a>
+    </div>
+
+    <!-- Order Summary -->
+    <div class="order-summary">
+      <h3 style="font-size:1.1rem; font-weight:800; margin-bottom:20px;">Order Summary</h3>
+      <div class="summary-row"><span>Subtotal</span><span id="s-subtotal">$0.00</span></div>
+      <div class="summary-row"><span>Shipping</span><span id="s-shipping">—</span></div>
+      <div class="summary-row"><span>Tax (8%)</span><span id="s-tax">$0.00</span></div>
+      <div class="summary-total"><span>Total</span><span id="s-total">$0.00</span></div>
+
+      <a href="checkout.html" class="btn btn-primary btn-full btn-lg mt-4" id="checkout-link">
+        Proceed to Checkout →
+      </a>
+      <div style="margin-top: 16px; text-align:center; font-size:0.8rem; color:var(--grey-500);">
+        🔒 Secure SSL checkout
+      </div>
+
+      <div style="margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--grey-100);">
+        <div style="font-size:0.8rem; color:var(--grey-500); margin-bottom:8px; font-weight:600;">We Accept:</div>
+        <div style="font-size:1.4rem;">💳 🅿️ 🍎 🏦</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Empty cart -->
+  <div class="hidden" id="cart-empty">
+    <div class="empty-cart">
+      <div style="font-size:5rem; margin-bottom:20px;">🛒</div>
+      <h2 style="font-size:1.5rem; font-weight:800; margin-bottom:12px;">Your cart is empty</h2>
+      <p class="text-muted mb-6">Start adding products from our catalog.</p>
+      <a href="products.html" class="btn btn-primary btn-lg">Start Shopping →</a>
+    </div>
+  </div>
+</div>
+
+<footer class="site-footer">
+  <div class="container"><div class="footer-bottom">
+    <span class="footer-copy">© 2024 GarageBasics. All rights reserved.</span>
+    <span class="footer-copy">💳 Visa · Mastercard · PayPal · AmEx</span>
+  </div></div>
+</footer>
+
+<div id="toast-container"></div>
+<script src="js/api.js"></script>
+<script src="js/main.js"></script>
+<script src="js/cart.js"></script>
+</body>
+</html>
